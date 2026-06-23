@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { login } from '../../services/authService'
+import { updatePassword } from '../../services/authService'
 
-function LoginPage() {
+function ResetPasswordPage() {
     const { t } = useTranslation()
     const navigate = useNavigate()
-    const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState(null)
     const [loading, setLoading] = useState(false)
@@ -16,8 +15,8 @@ function LoginPage() {
         setLoading(true)
         setError(null)
         try {
-            await login(email, password)
-            navigate('/')
+            await updatePassword(password)
+            navigate('/login')
         } catch (err) {
             setError(err.message)
         } finally {
@@ -27,33 +26,23 @@ function LoginPage() {
 
     return (
         <div className="auth-container">
-            <h1>{t('auth.login')}</h1>
+            <h1>{t('auth.resetPassword')}</h1>
             {error && <p className="error-msg">{error}</p>}
             <form onSubmit={handleSubmit}>
-                <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder={t('auth.email')}
-                    required
-                />
                 <input
                     type="password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder={t('auth.password')}
+                    minLength={8}
                     required
                 />
                 <button type="submit" disabled={loading}>
-                    {loading ? t('app.loading') : t('auth.login')}
+                    {loading ? t('app.loading') : t('auth.resetPassword')}
                 </button>
             </form>
-            <div className="auth-links">
-                <Link to="/forgot-password">{t('auth.forgotPassword')}</Link>
-                <Link to="/register">{t('auth.noAccount')}</Link>
-            </div>
         </div>
     )
 }
 
-export default LoginPage
+export default ResetPasswordPage

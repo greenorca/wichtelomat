@@ -1,14 +1,13 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { login } from '../../services/authService'
+import { sendPasswordReset } from '../../services/authService'
 
-function LoginPage() {
+function ForgotPasswordPage() {
     const { t } = useTranslation()
-    const navigate = useNavigate()
     const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
     const [error, setError] = useState(null)
+    const [sent, setSent] = useState(false)
     const [loading, setLoading] = useState(false)
 
     async function handleSubmit(e) {
@@ -16,8 +15,8 @@ function LoginPage() {
         setLoading(true)
         setError(null)
         try {
-            await login(email, password)
-            navigate('/')
+            await sendPasswordReset(email)
+            setSent(true)
         } catch (err) {
             setError(err.message)
         } finally {
@@ -25,9 +24,19 @@ function LoginPage() {
         }
     }
 
+    if (sent) {
+        return (
+            <div className="auth-container">
+                <h1>{t('auth.resetPassword')}</h1>
+                <p>Falls ein Konto mit dieser E-Mail existiert, haben wir dir einen Link gesendet.</p>
+                <Link to="/login">{t('auth.login')}</Link>
+            </div>
+        )
+    }
+
     return (
         <div className="auth-container">
-            <h1>{t('auth.login')}</h1>
+            <h1>{t('auth.resetPassword')}</h1>
             {error && <p className="error-msg">{error}</p>}
             <form onSubmit={handleSubmit}>
                 <input
@@ -37,23 +46,15 @@ function LoginPage() {
                     placeholder={t('auth.email')}
                     required
                 />
-                <input
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder={t('auth.password')}
-                    required
-                />
                 <button type="submit" disabled={loading}>
-                    {loading ? t('app.loading') : t('auth.login')}
+                    {loading ? t('app.loading') : t('auth.resetPassword')}
                 </button>
             </form>
             <div className="auth-links">
-                <Link to="/forgot-password">{t('auth.forgotPassword')}</Link>
-                <Link to="/register">{t('auth.noAccount')}</Link>
+                <Link to="/login">{t('auth.login')}</Link>
             </div>
         </div>
     )
 }
 
-export default LoginPage
+export default ForgotPasswordPage

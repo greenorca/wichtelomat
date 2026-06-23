@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { login } from '../../services/authService'
+import { register } from '../../services/authService'
 
-function LoginPage() {
+function RegisterPage() {
     const { t } = useTranslation()
     const navigate = useNavigate()
+    const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState(null)
+    const [success, setSuccess] = useState(false)
     const [loading, setLoading] = useState(false)
 
     async function handleSubmit(e) {
@@ -16,8 +18,8 @@ function LoginPage() {
         setLoading(true)
         setError(null)
         try {
-            await login(email, password)
-            navigate('/')
+            await register(email, password, name)
+            setSuccess(true)
         } catch (err) {
             setError(err.message)
         } finally {
@@ -25,11 +27,28 @@ function LoginPage() {
         }
     }
 
+    if (success) {
+        return (
+            <div className="auth-container">
+                <h1>{t('auth.register')}</h1>
+                <p>Bitte bestätige deine E-Mail-Adresse über den Link den wir dir gesendet haben.</p>
+                <Link to="/login">{t('auth.login')}</Link>
+            </div>
+        )
+    }
+
     return (
         <div className="auth-container">
-            <h1>{t('auth.login')}</h1>
+            <h1>{t('auth.register')}</h1>
             {error && <p className="error-msg">{error}</p>}
             <form onSubmit={handleSubmit}>
+                <input
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder={t('auth.name')}
+                    required
+                />
                 <input
                     type="email"
                     value={email}
@@ -42,18 +61,18 @@ function LoginPage() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder={t('auth.password')}
+                    minLength={8}
                     required
                 />
                 <button type="submit" disabled={loading}>
-                    {loading ? t('app.loading') : t('auth.login')}
+                    {loading ? t('app.loading') : t('auth.register')}
                 </button>
             </form>
             <div className="auth-links">
-                <Link to="/forgot-password">{t('auth.forgotPassword')}</Link>
-                <Link to="/register">{t('auth.noAccount')}</Link>
+                <Link to="/login">{t('auth.login')}</Link>
             </div>
         </div>
     )
 }
 
-export default LoginPage
+export default RegisterPage
