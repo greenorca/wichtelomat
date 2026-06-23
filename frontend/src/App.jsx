@@ -1,12 +1,35 @@
-import { useTranslation } from 'react-i18next'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import LoginPage from './pages/auth/LoginPage'
+import ActionsListPage from './pages/actions/ActionsListPage'
+
+function ProtectedRoute({ children }) {
+  const { session, loading } = useAuth()
+  if (loading) return <div>Laden...</div>
+  return session ? children : <Navigate to="/login" replace />
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      {/* Öffentlich */}
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* Geschützt */}
+      <Route path="/" element={
+        <ProtectedRoute><ActionsListPage /></ProtectedRoute>
+      } />
+    </Routes>
+  )
+}
 
 function App() {
-  const { t } = useTranslation()
-
   return (
-    <div>
-      <h1>{t('app.title')}</h1>
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 
