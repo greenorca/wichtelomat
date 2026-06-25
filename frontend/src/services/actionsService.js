@@ -95,6 +95,24 @@ export async function getMemberships(actionId) {
     }))
 }
 
+// READ/WRITE: Wunschzettel
+export async function getMyWishlist(membershipId) {
+    const { data, error } = await supabase
+        .from('wishlists')
+        .select('content')
+        .eq('membership_id', membershipId)
+        .maybeSingle()
+    if (error) throw error
+    return data?.content ?? ''
+}
+
+export async function saveWishlist(membershipId, content) {
+    const { error } = await supabase
+        .from('wishlists')
+        .upsert({ membership_id: membershipId, content, updated_at: new Date().toISOString() })
+    if (error) throw error
+}
+
 // READ: Meine Zuweisung (nur wenn ACTIVE/COMPLETED)
 export async function getMyAssignment(myMembershipId) {
     const { data: assignment, error } = await supabase

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../contexts/AuthContext'
-import { getAction, getMemberships, updateAction, getMyAssignment } from '../../services/actionsService'
+import { getAction, getMemberships, updateAction, getMyAssignment, getMyWishlist, saveWishlist } from '../../services/actionsService'
 import { startDraw } from '../../services/drawService'
 import { createInvitation, sendInvitationEmail } from '../../services/invitationService'
 
@@ -128,7 +128,15 @@ function ActionDetailPage() {
                     />
                 )}
 
-                {(activeTab === 'exclusions' || activeTab === 'wishlist') && (
+                {activeTab === 'wishlist' && (
+                    <WishlistTab
+                        action={action}
+                        myMembership={myMembership}
+                        t={t}
+                    />
+                )}
+
+                {activeTab === 'exclusions' && (
                     <p className="text-muted">{t('app.comingSoon')}</p>
                 )}
             </div>
@@ -251,6 +259,68 @@ function AssignmentTab({ action, myMembership, t }) {
                 </div>
             ) : (
                 <p className="text-muted">{t('wishlist.empty')}</p>
+            )}
+        </div>
+    )
+}
+
+function WishlistTab({ action, myMembership, t }) {
+    const [content, setContent] = useState('')
+    const [loading, setLoading] = useState(true)
+    const [saving, setSaving] = useState(false)
+    const [saveMsg, setSaveMsg] = useState(null)
+
+    useEffect(() => {
+        if (!myMembership) { setLoading(false); return }
+        getMyWishlist(myMembership.id)
+            .then(setContent)
+            .catch(() => {})
+            .finally(() => setLoading(false))
+    }, [myMembership?.id])
+
+    async function handleSave(e) {
+        e.preventDefault()
+        setSaving(true)
+        setSaveMsg(null)
+        try {
+            await saveWishlist(myMembership.id, content)
+            setSaveMsg('ok')
+        } catch (err) {
+            setSaveMsg(err.message)
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    if (loading) return <p>{t('app.loading')}</p>
+
+    const editable = action.status === 'SETUP'
+
+    return (
+        <div className="wishlist-tab">
+            {editable && <p className="text-muted">{t('wishlist.hint')}</p>}
+            {editable ? (
+                <form className="form-vertical" onSubmit={handleSave}>
+                    <textarea
+                        className="wishlist-textarea"
+                        value={content}
+                        onChange={e => setContent(e.target.value)}
+                        rows={6}
+                        placeholder="…"
+                    />
+                    <button type="submit" disabled={saving}>
+                        {saving ? t('app.loading') : t('wishlist.save')}
+                    </button>
+                    {saveMsg === 'ok' && <p className="success-msg">{t('actions.settingsSaved')}</p>}
+                    {saveMsg && saveMsg !== 'ok' && <p className="error-msg">{saveMsg}</p>}
+                </form>
+            ) : (
+                <div className="wishlist-readonly">
+                    {content
+                        ? <p className="wishlist-content">{content}</p>
+                        : <p className="text-muted">{t('wishlist.empty')}</p>
+                    }
+                </div>
             )}
         </div>
     )

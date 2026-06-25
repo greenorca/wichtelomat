@@ -243,6 +243,23 @@
     font-size: var(--font-size-sm);
 }
 
+/* Wunschzettel-Tab */
+
+.wishlist-tab {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.wishlist-textarea {
+    padding: var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-md);
+    font-family: inherit;
+    resize: vertical;
+}
+
 /* Meine Zuweisung */
 
 .assignment-tab {
