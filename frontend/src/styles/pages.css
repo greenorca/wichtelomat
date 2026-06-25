@@ -243,6 +243,45 @@
     font-size: var(--font-size-sm);
 }
 
+/* Meine Zuweisung */
+
+.assignment-tab {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.assignment-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: 0;
+}
+
+.assignment-receiver {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-top: 0;
+}
+
+.wishlist-readonly {
+    padding: var(--space-md);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+.wishlist-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xs);
+}
+
+.wishlist-content {
+    white-space: pre-line;
+    color: var(--color-text);
+}
+
 /* Mitglieder-Tab */
 
 .members-tab {

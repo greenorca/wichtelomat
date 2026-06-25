@@ -65,9 +65,10 @@
         "add": "Add exclusion"
     },
     "wishlist": {
-        "title": "My wishlist",
+        "title": "Wishlist",
         "hint": "Editable only until the exchange starts.",
-        "save": "Save"
+        "save": "Save",
+        "empty": "No wishlist available."
     },
     "assignment": {
         "title": "My assignment",

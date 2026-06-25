@@ -5,5 +5,12 @@ export async function startDraw(actionId) {
         .rpc('draw_assignments', { p_action_id: actionId })
     if (error) throw error
     if (data?.error) throw new Error(data.error)
+
+    try {
+        await supabase.functions.invoke('send-assignment-email', {
+            body: { action_id: actionId }
+        })
+    } catch {}
+
     return data
 }
