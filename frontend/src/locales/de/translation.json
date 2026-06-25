@@ -65,9 +65,10 @@
         "add": "Ausschluss hinzufügen"
     },
     "wishlist": {
-        "title": "Mein Wunschzettel",
+        "title": "Wunschzettel",
         "hint": "Nur bis zum Aktionsstart bearbeitbar.",
-        "save": "Speichern"
+        "save": "Speichern",
+        "empty": "Kein Wunschzettel vorhanden."
     },
     "assignment": {
         "title": "Meine Zuweisung",

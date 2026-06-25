@@ -94,3 +94,41 @@ export async function getMemberships(actionId) {
         display_name: profileMap[m.user_id]?.display_name || null
     }))
 }
+
+// READ: Meine Zuweisung (nur wenn ACTIVE/COMPLETED)
+export async function getMyAssignment(myMembershipId) {
+    const { data: assignment, error } = await supabase
+        .from('assignments')
+        .select('receiver_membership_id')
+        .eq('giver_membership_id', myMembershipId)
+        .single()
+    if (error) throw error
+
+    const { data: receiverMembership } = await supabase
+        .from('memberships')
+        .select('user_id, is_guest, guest_email')
+        .eq('id', assignment.receiver_membership_id)
+        .single()
+
+    let receiverName = receiverMembership?.guest_email || '—'
+    if (receiverMembership?.user_id) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('display_name')
+            .eq('id', receiverMembership.user_id)
+            .single()
+        if (profile?.display_name) receiverName = profile.display_name
+    }
+
+    const { data: wishlist } = await supabase
+        .from('wishlists')
+        .select('content')
+        .eq('membership_id', assignment.receiver_membership_id)
+        .maybeSingle()
+
+    return {
+        receiver_membership_id: assignment.receiver_membership_id,
+        receiver_name: receiverName,
+        wishlist_content: wishlist?.content || null
+    }
+}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../contexts/AuthContext'
-import { getAction, getMemberships, updateAction } from '../../services/actionsService'
+import { getAction, getMemberships, updateAction, getMyAssignment } from '../../services/actionsService'
 import { startDraw } from '../../services/drawService'
 import { createInvitation, sendInvitationEmail } from '../../services/invitationService'
 
@@ -120,7 +120,15 @@ function ActionDetailPage() {
                     />
                 )}
 
-                {(activeTab === 'exclusions' || activeTab === 'wishlist' || activeTab === 'assignment') && (
+                {activeTab === 'assignment' && (
+                    <AssignmentTab
+                        action={action}
+                        myMembership={myMembership}
+                        t={t}
+                    />
+                )}
+
+                {(activeTab === 'exclusions' || activeTab === 'wishlist') && (
                     <p className="text-muted">{t('app.comingSoon')}</p>
                 )}
             </div>
@@ -204,6 +212,45 @@ function VorgabenTab({ action, isAdmin, onUpdate, t }) {
                     {action.max_cost && <p>{t('actions.maxCost')}: <strong>CHF {Number(action.max_cost).toFixed(2)}</strong></p>}
                     <p className="text-muted">{t('actions.settingsLocked')}</p>
                 </div>
+            )}
+        </div>
+    )
+}
+
+function AssignmentTab({ action, myMembership, t }) {
+    const [assignment, setAssignment] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+
+    useEffect(() => {
+        if (action.status === 'SETUP' || !myMembership) {
+            setLoading(false)
+            return
+        }
+        getMyAssignment(myMembership.id)
+            .then(setAssignment)
+            .catch(err => setError(err.message))
+            .finally(() => setLoading(false))
+    }, [action.status, myMembership?.id])
+
+    if (action.status === 'SETUP') {
+        return <p className="text-muted">{t('app.comingSoon')}</p>
+    }
+    if (loading) return <p>{t('app.loading')}</p>
+    if (error) return <p className="error-msg">{error}</p>
+    if (!assignment) return null
+
+    return (
+        <div className="assignment-tab">
+            <p className="assignment-label">{t('assignment.youGiftTo')}</p>
+            <p className="assignment-receiver">{assignment.receiver_name}</p>
+            {assignment.wishlist_content ? (
+                <div className="wishlist-readonly">
+                    <p className="wishlist-label">{t('wishlist.title')}</p>
+                    <p className="wishlist-content">{assignment.wishlist_content}</p>
+                </div>
+            ) : (
+                <p className="text-muted">{t('wishlist.empty')}</p>
             )}
         </div>
     )
