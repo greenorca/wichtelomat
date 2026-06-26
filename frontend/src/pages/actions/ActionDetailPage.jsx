@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../contexts/AuthContext'
 import {
     getAction, getMemberships, updateAction,
     getMyAssignment, getMyWishlist, saveWishlist,
     getExclusions, addExclusion, removeExclusion,
-    getPendingInvitations
+    getPendingInvitations, cancelAction
 } from '../../services/actionsService'
 import { startDraw } from '../../services/drawService'
 import { createInvitation, sendInvitationEmail } from '../../services/invitationService'
+import InlineDatePicker from '../../components/InlineDatePicker'
 
 const TABS = [
     { key: 'members',    labelKey: 'members.title' },
@@ -29,6 +30,7 @@ function ActionDetailPage() {
     const { id } = useParams()
     const { t } = useTranslation()
     const { session } = useAuth()
+    const navigate = useNavigate()
     const [action, setAction] = useState(null)
     const [memberships, setMemberships] = useState([])
     const [activeTab, setActiveTab] = useState('members')
@@ -85,11 +87,11 @@ function ActionDetailPage() {
                 <div>
                     <h1>{action.name}</h1>
                     <div className="action-meta">
-                        <span>{formatDate(action.handover_date)}</span>
+                        <span>{t('actions.handoverDate')}: {formatDate(action.handover_date)}</span>
                         {action.max_cost && (
                             <>
                                 <span className="action-meta-sep">·</span>
-                                <span>CHF {Number(action.max_cost).toFixed(2)}</span>
+                                <span>{t('actions.maxCost')}: CHF {Number(action.max_cost).toFixed(2)}</span>
                             </>
                         )}
                     </div>
@@ -98,6 +100,7 @@ function ActionDetailPage() {
                     {t(`actions.status.${action.status}`)}
                 </span>
             </div>
+            <hr className="action-detail-divider" />
 
             <nav className="tab-nav">
                 {TABS.map(tab => (
@@ -124,10 +127,11 @@ function ActionDetailPage() {
                 )}
 
                 {activeTab === 'settings' && (
-                    <VorgabenTab
+                    <EinstellungenTab
                         action={action}
                         isAdmin={isAdmin}
                         onUpdate={loadData}
+                        onDeleted={() => navigate('/')}
                         t={t}
                     />
                 )}
@@ -184,11 +188,13 @@ function ActionDetailPage() {
     )
 }
 
-function VorgabenTab({ action, isAdmin, onUpdate, t }) {
+function EinstellungenTab({ action, isAdmin, onUpdate, onDeleted, t }) {
     const [date, setDate] = useState(action.handover_date)
     const [cost, setCost] = useState(action.max_cost ?? '')
     const [saving, setSaving] = useState(false)
     const [saveMsg, setSaveMsg] = useState(null)
+    const [deleting, setDeleting] = useState(false)
+    const [deleteError, setDeleteError] = useState(null)
 
     async function handleSave(e) {
         e.preventDefault()
@@ -208,54 +214,96 @@ function VorgabenTab({ action, isAdmin, onUpdate, t }) {
         }
     }
 
-    if (!(isAdmin && action.status === 'SETUP')) {
-        return (
-            <div className="vorgaben-tab">
-                <div className="vorgaben-readonly">
-                    <p><strong>{formatDate(action.handover_date)}</strong></p>
-                    {action.max_cost && <p>CHF <strong>{Number(action.max_cost).toFixed(2)}</strong></p>}
-                    <p className="text-muted">{t('actions.settingsLocked')}</p>
-                </div>
-            </div>
-        )
+    async function handleDelete() {
+        if (!window.confirm(t('actions.confirmDelete'))) return
+        setDeleting(true)
+        setDeleteError(null)
+        try {
+            await cancelAction(action.id)
+            onDeleted()
+        } catch (err) {
+            setDeleteError(err.message)
+            setDeleting(false)
+        }
     }
 
+    const canEdit = isAdmin && action.status === 'SETUP'
+
     return (
-        <form className="vorgaben-tab" onSubmit={handleSave}>
-            <div className="vorgaben-grid">
-                <div className="vorgaben-field">
-                    <label>
-                        {t('actions.handoverDate')}
-                        <input
-                            type="date"
-                            value={date}
-                            onChange={e => setDate(e.target.value)}
-                            required
-                        />
-                    </label>
+        <div className="vorgaben-tab">
+            {canEdit ? (
+                <form onSubmit={handleSave}>
+                    <div className="einstellungen-grid">
+                        {/* Links: Datum + Kalender */}
+                        <div className="einstellungen-col">
+                            <span className="einstellungen-col-label">{t('actions.handoverDate')}</span>
+                            <InlineDatePicker value={date} onChange={setDate} />
+                        </div>
+
+                        {/* Rechts: Max. Kosten Label + Input (aligned mit Datum) + Buttons unten */}
+                        <div className="einstellungen-col einstellungen-col-right">
+                            <span className="einstellungen-col-label">{t('actions.maxCost')}</span>
+                            <input
+                                type="number"
+                                min="0"
+                                step="1"
+                                value={cost}
+                                onChange={e => setCost(e.target.value)}
+                                placeholder="—"
+                                className="date-picker-input cost-input-stretch"
+                            />
+                            {saveMsg === 'ok' && <p className="success-msg">{t('actions.settingsSaved')}</p>}
+                            {saveMsg && saveMsg !== 'ok' && <p className="error-msg">{saveMsg}</p>}
+                            {deleteError && <p className="error-msg">{deleteError}</p>}
+                            <div className="einstellungen-actions">
+                                <button
+                                    type="button"
+                                    className="btn-cancel"
+                                    onClick={handleDelete}
+                                    disabled={deleting}
+                                >
+                                    {deleting ? t('actions.deleting') : t('actions.delete')}
+                                </button>
+                                <button type="submit" className="btn-primary" disabled={saving}>
+                                    {saving ? t('app.loading') : t('actions.saveSettings')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            ) : (
+                <div>
+                    <div className="vorgaben-readonly">
+                        <div className="vorgaben-readonly-item">
+                            <span className="vorgaben-readonly-label">{t('actions.handoverDate')}</span>
+                            <span className="vorgaben-readonly-value">{formatDate(action.handover_date)}</span>
+                        </div>
+                        <div className="vorgaben-readonly-item">
+                            <span className="vorgaben-readonly-label">{t('actions.maxCost')}</span>
+                            <span className="vorgaben-readonly-value">
+                                {action.max_cost ? `CHF ${Number(action.max_cost).toFixed(2)}` : '—'}
+                            </span>
+                        </div>
+                    </div>
+                    <p className="text-muted" style={{ marginTop: 'var(--space-md)' }}>
+                        {t('actions.settingsLocked')}
+                    </p>
+                    {isAdmin && (
+                        <div style={{ marginTop: 'var(--space-lg)' }}>
+                            {deleteError && <p className="error-msg">{deleteError}</p>}
+                            <button
+                                type="button"
+                                className="btn-cancel"
+                                onClick={handleDelete}
+                                disabled={deleting}
+                            >
+                                {deleting ? t('actions.deleting') : t('actions.delete')}
+                            </button>
+                        </div>
+                    )}
                 </div>
-                <div className="vorgaben-field">
-                    <label>
-                        {t('actions.maxCost')}
-                        <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={cost}
-                            onChange={e => setCost(e.target.value)}
-                            placeholder="—"
-                        />
-                    </label>
-                </div>
-            </div>
-            {saveMsg === 'ok' && <p className="success-msg">{t('actions.settingsSaved')}</p>}
-            {saveMsg && saveMsg !== 'ok' && <p className="error-msg">{saveMsg}</p>}
-            <div className="form-footer">
-                <button type="submit" className="btn-primary" disabled={saving}>
-                    {saving ? t('app.loading') : t('actions.saveSettings')}
-                </button>
-            </div>
-        </form>
+            )}
+        </div>
     )
 }
 
@@ -276,7 +324,7 @@ function AssignmentTab({ action, myMembership, t }) {
     }, [action.status, myMembership?.id])
 
     if (action.status === 'SETUP') {
-        return <p className="text-muted">{t('app.comingSoon')}</p>
+        return <p className="text-muted">{t('assignment.pendingDraw')}</p>
     }
     if (loading) return <p>{t('app.loading')}</p>
     if (error) return <p className="error-msg">{error}</p>

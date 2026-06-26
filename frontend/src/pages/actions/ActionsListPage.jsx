@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../../contexts/AuthContext'
 import { getMyActions } from '../../services/actionsService'
 import { logout } from '../../services/authService'
 
 function ActionsListPage() {
     const { t } = useTranslation()
     const navigate = useNavigate()
+    const { session } = useAuth()
     const [actions, setActions] = useState([])
     const [error, setError] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -26,22 +28,26 @@ function ActionsListPage() {
         }
     }
 
-    async function handleLogout() {
-        await logout()
-        navigate('/login')
-    }
-
     function formatDate(dateStr) {
         if (!dateStr) return ''
         const [y, m, d] = dateStr.split('-')
         return `${d}.${m}.${y}`
     }
 
+    const displayName = session?.user?.user_metadata?.display_name || session?.user?.email || '?'
+    const initial = displayName.charAt(0).toUpperCase()
+    const avatarUrl = session?.user?.user_metadata?.avatar_url
+
     return (
         <div className="page-container">
             <header className="page-header">
                 <h1>{t('actions.myActions')}</h1>
-                <button className="btn-logout" onClick={handleLogout}>{t('auth.logout')}</button>
+                <Link to="/profile" className="avatar-btn" title={t('profile.title')}>
+                    {avatarUrl
+                        ? <img src={avatarUrl} alt={displayName} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                        : initial
+                    }
+                </Link>
             </header>
 
             <Link to="/actions/new" className="btn-primary">

@@ -26,11 +26,15 @@
         "cancel": "Aktion abbrechen",
         "confirmCancel": "Aktion wirklich abbrechen? Alle Aktionsdaten werden gelöscht.",
         "backToList": "Zurück zur Übersicht",
-        "settingsTab": "Vorgaben",
+        "settingsTab": "Einstellungen",
         "saveSettings": "Speichern",
         "settingsSaved": "Gespeichert.",
-        "settingsLocked": "Vorgaben können nach dem Start nicht mehr geändert werden.",
+        "settingsLocked": "Einstellungen können nach dem Start nicht mehr geändert werden.",
         "minMembers": "Mindestens 2 Mitglieder nötig.",
+        "delete": "Aktion löschen",
+        "confirmDelete": "Aktion wirklich löschen? Alle Mitgliedschaften, Zuweisungen und Wunschzettel werden unwiderruflich entfernt.",
+        "deleting": "Wird gelöscht...",
+        "deleteDesc": "Löscht die gesamte Aktion und alle zugehörigen Daten dauerhaft.",
         "status": {
             "SETUP": "Einrichtung",
             "ACTIVE": "Aktiv",
@@ -80,7 +84,22 @@
     },
     "assignment": {
         "title": "Meine Zuweisung",
-        "youGiftTo": "Du wichtelst für:"
+        "youGiftTo": "Du wichtelst für:",
+        "pendingDraw": "Sobald die Auslosung stattgefunden hat, wird dir hier angezeigt, für wen du wichtelst."
+    },
+    "profile": {
+        "title": "Mein Profil",
+        "save": "Profil speichern",
+        "saved": "Profil gespeichert.",
+        "changeAvatar": "Foto ändern",
+        "avatarError": "Profilbild konnte nicht gespeichert werden. Bitte stelle sicher, dass der 'avatars'-Bucket in Supabase Storage existiert.",
+        "passwordSection": "Passwort ändern",
+        "newPassword": "Neues Passwort",
+        "confirmPassword": "Passwort bestätigen",
+        "savePassword": "Passwort ändern",
+        "passwordSaved": "Passwort geändert.",
+        "passwordMismatch": "Die Passwörter stimmen nicht überein.",
+        "emailNote": "Eine Bestätigung wird an die neue Adresse gesendet."
     },
     "errors": {
         "generic": "Ein Fehler ist aufgetreten.",

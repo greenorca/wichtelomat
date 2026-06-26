@@ -8,6 +8,7 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 import CreateActionPage from './pages/actions/CreateActionPage'
 import ActionDetailPage from './pages/actions/ActionDetailPage'
 import InvitationPage from './pages/invitation/InvitationPage'
+import ProfilePage from './pages/profile/ProfilePage'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -34,6 +35,9 @@ function AppRoutes() {
       } />
       <Route path="/actions/:id" element={
         <ProtectedRoute><ActionDetailPage /></ProtectedRoute>
+      } />
+      <Route path="/profile" element={
+        <ProtectedRoute><ProfilePage /></ProtectedRoute>
       } />
     </Routes>
   )
