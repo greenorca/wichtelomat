@@ -39,9 +39,25 @@ export async function updatePassword(newPassword) {
 
 // UC-04: Profil aktualisieren
 export async function updateProfile(displayName, email) {
-    const { error } = await supabase.auth.updateUser({
-        email,
-        data: { display_name: displayName }
-    })
+    const updates = { data: { display_name: displayName } }
+    if (email) updates.email = email
+    const { error } = await supabase.auth.updateUser(updates)
     if (error) throw error
+}
+
+// Avatar hochladen (Supabase Storage, Bucket: 'avatars')
+export async function updateAvatar(file, userId) {
+    const ext = file.name.split('.').pop().toLowerCase()
+    const path = `${userId}/avatar.${ext}`
+    const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true, contentType: file.type })
+    if (uploadError) throw uploadError
+
+    const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+    const avatarUrl = `${data.publicUrl}?t=${Date.now()}`
+
+    const { error } = await supabase.auth.updateUser({ data: { avatar_url: avatarUrl } })
+    if (error) throw error
+    return avatarUrl
 }

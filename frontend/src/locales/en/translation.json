@@ -31,6 +31,10 @@
         "settingsSaved": "Saved.",
         "settingsLocked": "Settings cannot be changed after the exchange has started.",
         "minMembers": "At least 2 members required.",
+        "delete": "Delete exchange",
+        "confirmDelete": "Really delete this exchange? All memberships, assignments and wishlists will be permanently removed.",
+        "deleting": "Deleting...",
+        "deleteDesc": "Permanently deletes the entire exchange and all associated data.",
         "status": {
             "SETUP": "Setup",
             "ACTIVE": "Active",
@@ -80,7 +84,22 @@
     },
     "assignment": {
         "title": "My assignment",
-        "youGiftTo": "You're gifting to:"
+        "youGiftTo": "You're gifting to:",
+        "pendingDraw": "Once the draw has taken place, the person you're gifting to will be shown here."
+    },
+    "profile": {
+        "title": "My Profile",
+        "save": "Save profile",
+        "saved": "Profile saved.",
+        "changeAvatar": "Change photo",
+        "avatarError": "Could not save profile picture. Please ensure the 'avatars' bucket exists in Supabase Storage.",
+        "passwordSection": "Change password",
+        "newPassword": "New password",
+        "confirmPassword": "Confirm password",
+        "savePassword": "Change password",
+        "passwordSaved": "Password changed.",
+        "passwordMismatch": "Passwords do not match.",
+        "emailNote": "A confirmation will be sent to the new address."
     },
     "errors": {
         "generic": "An error occurred.",
